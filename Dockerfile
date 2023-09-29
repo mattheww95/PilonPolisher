@@ -25,4 +25,18 @@ RUN /opt/docker_install_pilon.sh
 RUN /opt/docker_install_htslib.sh
 RUN /opt/docker_install_samtools.sh
 RUN /opt/docker_install_minimap2.sh
+ENV PATH="/usr/bin:/opt/Python-3.11.3:${PATH}"
+
+# tests
+RUN echo "Testing Pilon"
+RUN file=$(java -Xmx4G -jar /usr/bin/pilon.jar --help) && echo $file
+RUN echo "Testing samtools"
+RUN echo $(samtools version)
+RUN echo "Testing python3.11"
+RUN echo $(python3.11 --version)
+RUN echo "Testing minimap2"
+RUN echo $(minimap2 -V)
+RUN echo $(ls /opt)
+
 # RUN export LC_ALL=C; export PATH=/usr/bin:$PATH; export PATH=/opt/Python-3.11.3:$PATH
+

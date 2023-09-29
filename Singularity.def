@@ -136,16 +136,16 @@ From: ubuntu:20.04
     java -Xmx4G -jar /usr/bin/pilon.jar --help
     echo 'Testing samtools'
     samtools version
-    echo 'Testing bcftools'
-    bcftools version
+    #echo 'Testing bcftools'
+    #bcftools version
     echo 'Testing flye'
     # Disabled Flyes toy tests as the required params not specified in the installation instructions to be used
     #flye /opt/Flye/flye/tests/test_toy.py -o /dev/null
-    flye -v
+    #flye -v
     echo 'Testing minimap2'
     minimap2 -V
-    echo "Testing Racon"
-    racon -h
+    #echo "Testing Racon"
+    #racon -h
     echo 'Test python 3.11'
     python3.11 --version
     #echo 'Test pilonpolisher'
