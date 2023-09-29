@@ -1,0 +1,157 @@
+Bootstrap: docker
+From: ubuntu:20.04
+
+%labels
+    Author Matthew Wells
+    Version v0.0.1
+    Name GenomePolishingImage
+
+
+%files
+    ./dist/pilonpolisher-0.0.1-py3-none-any.whl /opt
+
+%post
+    # container installs
+    export DEBIAN_FRONTEND=nointeractive
+    apt-get -y update
+    apt-get install autoconf bzip2 libbz2-dev liblzma-dev wget gcc zlib1g-dev build-essential libncurses-dev git python3 python python3-pip default-jre cmake -y
+    apt-get install python3-pip libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev pkg-config -y
+    pip3 install setuptools
+    export LC_ALL=C.UTF-8
+    export LANG=C.UTF-8
+
+    #Install and compile python 3.11 because I am a mad man
+
+    cd /opt
+    wget https://www.python.org/ftp/python/3.11.3/Python-3.11.3.tgz
+    tar -xf ./Python-3.11.*.tgz
+    cd ./Python-3.11.*/
+    ./configure --enable-optimizations
+    make -j 8
+    make install
+    export PATH=$PWD:$PATH
+    cd /opt
+
+    # install hatch
+    # TODO if installation continues to be difficult, the wheel can just be built in the container with hatch
+    #cd /opt
+    #python3.11 -m pip install hatch
+    #cd /opt
+
+    #Copy in pilon polisher
+
+    cd /opt
+    pip3.11 install pilonpolisher-0.0.1-py3-none-any.whl
+    cd /opt
+
+    #install racon
+    #cd /opt
+    #git clone --recursive https://github.com/lbcb-sci/racon racon
+    #cd ./racon
+    #mkdir build
+    #cd ./build
+    #cmake -DCMAKE_BUILD_TYPE=Release ..
+    #make
+    #make install
+    #cd /opt
+
+    #install pilon
+
+    cd /opt
+    mkdir pilon
+    cd pilon
+    wget https://github.com/broadinstitute/pilon/releases/download/v1.24/pilon-1.24.jar -O pilon.jar
+    mv pilon.jar /usr/bin/
+    cd /opt
+
+    # build htslib
+
+    cd /opt
+    wget https://github.com/samtools/htslib/releases/download/1.17/htslib-1.17.tar.bz2 -O htslib.tar.bz2
+    bunzip2 htslib.tar.bz2 && tar -xf htslib.tar
+    cd ./htslib-1.17
+    autoreconf -i -f 
+    ./configure
+    make
+    make install
+    make clean
+    cd /opt
+
+    # build samtools
+
+    cd /opt
+    wget https://github.com/samtools/samtools/releases/download/1.17/samtools-1.17.tar.bz2 -O samtools.tar.bz2
+    bunzip2 samtools.tar.bz2 && tar -xf samtools.tar
+    cd ./samtools-1.17
+    autoheader
+    autoconf -Wno-syntax
+    ./configure
+    make
+    make install
+    make clean
+    cd /opt
+
+    #build bcftools
+    #cd /opt
+    #wget https://github.com/samtools/bcftools/releases/download/1.17/bcftools-1.17.tar.bz2 -O bcftools.tar.bz2
+    #bunzip2 bcftools.tar.bz2 && tar -xf bcftools.tar
+    #cd ./bcftools-1.17
+    #./configure
+    #make
+    #make install
+    #make clean
+    #cd /opt
+
+    #build minimap2
+
+    cd /opt
+    git clone https://github.com/lh3/minimap2
+    cd ./minimap2
+    make
+    cp -s $PWD/minimap2 /usr/bin/
+    cd /opt
+
+    #Build flye
+    #cd /opt
+    #git clone https://github.com/fenderglass/Flye
+    #cd Flye
+    #make
+    #make clean
+    #python3 setup.py install
+    #cd /opt
+
+
+%help
+    This is a container for testing the development of a hybrid polishing workflow. Currently the builtin utilities include
+    Htslib, samtools, bcftools and flye. Arguments passed to the image are passed directly to the program e.g. run samtools version message
+    by entering 'apptainer run ./IMAGENAME samtools version'
+
+%environment
+    export LC_ALL=C
+    export PATH=/usr/bin:$PATH
+    export PATH=/opt/Python-3.11.3:$PATH
+
+%test
+    echo 'Testing pilon'
+    java -Xmx4G -jar /usr/bin/pilon.jar --help
+    echo 'Testing samtools'
+    samtools version
+    echo 'Testing bcftools'
+    bcftools version
+    echo 'Testing flye'
+    # Disabled Flyes toy tests as the required params not specified in the installation instructions to be used
+    #flye /opt/Flye/flye/tests/test_toy.py -o /dev/null
+    flye -v
+    echo 'Testing minimap2'
+    minimap2 -V
+    echo "Testing Racon"
+    racon -h
+    echo 'Test python 3.11'
+    python3.11 --version
+    #echo 'Test pilonpolisher'
+    #pilonpolisher --help
+
+
+%runscript
+    echo "Arguments Passed to Image: $*"
+    exec "$@"

@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "PilonPolisher"
+version = "0.0.1"
+authors = [
+    { name="Matthew Wells", email="" }
+]
+description = "An iterative pilon polisher"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: POSIX :: Linux"
+]
+
+
+[project.urls]
+"Homepage" = "..."
+"Bug Tracker" = "..."
+
+[project.scripts]
+pilonpolisher = "cli:main"
+
+[tool.hatch.build]
+sources = ["src"]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    "*.sif",
+    "Makefile"]
+
+
+[tool.hatch.build.targets.wheel]
+sources = ["src"]
